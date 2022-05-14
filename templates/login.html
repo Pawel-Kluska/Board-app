@@ -1,0 +1,60 @@
+{% extends "forms_template.html" %}
+{% block form %}
+
+    <h2 class="text-uppercase text-center mb-5">Login to an account</h2>
+
+              <form method="post" action="">
+                {{ form.hidden_tag() }}
+
+                <div class="form-outline mb-4">
+                    {{ form.email.label(class="form-control-label") }}
+
+                    {% if form.email.errors %}
+                        {{ form.email(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.email.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.email(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+
+                <div class="form-outline mb-4">
+                    {{ form.password.label(class="form-control-label") }}
+
+                    {% if form.password.errors %}
+                        {{ form.password(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.password.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.password(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+                  <div class="form-check">
+                    {{ form.remember(class="form-check-input") }}
+                    {{ form.remember.label(class="form-check-label") }}
+                </div>
+
+                <div class="d-flex justify-content-center">
+                  {{ form.submit(class="class=btn btn-success btn-block btn-lg gradient-custom-4 text-body") }}
+                </div>
+
+                  <small class="text-muted ml-2">
+                <a href="#">Forgot Password?</a>
+                </small>
+
+                <p class="text-center text-muted mt-5 mb-0">Don't have an account? <a href="{{ url_for('register') }}"
+                    class="fw-bold text-body"><u>Register here</u></a></p>
+
+              </form>
+
+
+
+
+
+    {% endblock %}
