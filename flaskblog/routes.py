@@ -1,16 +1,12 @@
-from flask import Flask, render_template, url_for, flash, redirect
-from forms import RegistrationForm, LoginForm
-
-app = Flask(__name__)
-app.config['SECRET_KEY'] = '58b35f5c02f37f5bd505bcb95d0433fe'
-
-title_home = 'Home'
-
+from flaskblog.models import User, Post
+from flask import render_template, url_for, flash, redirect
+from flaskblog.forms import RegistrationForm, LoginForm
+from flaskblog import app
 
 @app.route('/')
 @app.route('/home')
 def home():
-    return render_template('home.html', title=title_home)
+    return render_template('home.html', title='Home')
 
 
 @app.route('/about')
@@ -38,7 +34,3 @@ def login():
         else:
             flash('Login Unsuccessful. Please check username and password', 'danger')
     return render_template('login.html', title='Login', form=form)
-
-
-if __name__ == '__main__':
-    app.run()
