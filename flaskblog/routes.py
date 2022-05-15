@@ -2,8 +2,9 @@ from flask_login import login_user, current_user, logout_user, login_required
 
 from flaskblog.models import User, Post
 from flask import render_template, url_for, flash, redirect, request
-from flaskblog.forms import RegistrationForm, LoginForm
+from flaskblog.forms import RegistrationForm, LoginForm, AccountForm, PasswordForm
 from flaskblog import app, db, bcrypt
+
 
 @app.route('/')
 @app.route('/home')
@@ -65,7 +66,36 @@ def logout():
     return redirect(url_for('home'))
 
 
-@app.route('/account')
+@app.route('/account', methods=['GET', 'POST'])
 @login_required
 def account():
-    return render_template('account.html', title='Account')
+    img = url_for('static', filename='profile_img/' + current_user.image_file)
+    form_user = AccountForm()
+    form_password = PasswordForm()
+
+    if form_user.validate_on_submit():
+        current_user.username = form_user.username.data
+        current_user.email = form_user.email.data
+        current_user.address = form_user.address.data
+        current_user.phone = form_user.phone.data
+        db.session.commit()
+        flash('Update succesful', 'success')
+        return redirect(url_for('home'))
+    elif request.method == 'GET':
+        form_user.username.data = current_user.username
+        form_user.email.data = current_user.email
+        form_user.address.data = current_user.address
+        form_user.phone.data = current_user.phone
+
+    if form_password.validate_on_submit():
+        if bcrypt.check_password_hash(current_user.password, form_password.old_password.data):
+            current_user.password = bcrypt.generate_password_hash(form_password.password.data).decode('utf-8')
+            db.session.commit()
+            flash('Password changed succesfully', 'success')
+            return redirect(url_for('home'))
+        flash('You entered wrong password, try again', 'danger')
+
+        current_user.phone = form_user.phone.data
+        db.session.commit()
+    return render_template('account_form.html', title='Account', image=img,
+                           form_user=form_user, form_password=form_password)
