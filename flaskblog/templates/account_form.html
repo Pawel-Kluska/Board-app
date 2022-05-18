@@ -6,7 +6,7 @@
     <div class="col-12 col-lg-10 col-xl-8 mx-auto">
         <h2 class="h3 mb-4 page-title">Settings</h2>
         <div class="my-4">
-            <form method="post" action="">
+            <form method="post" action="" enctype="multipart/form-data">
             {{ form_user.hidden_tag() }}
                 <div class="row mt-5 align-items-center">
                     <div class="col-md-6 text-center mb-5">
@@ -23,11 +23,20 @@
                             </div>
                         </div>
                         <div class="col align-content-center">
-                              <input type="button" value="Change image" class="btn btn-primary">
+                            <h6>{{ form_user.picture.label() }}</h6>
+                            {{ form_user.picture() }}
+                        <br>
+                        {% if form_user.picture.errors %}
+                            {% for error in form_user.picture.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                        </div>
+
                         </div>
 
                     </div>
-                </div>
+
 
                 <hr class="my-4" />
                 <div class="form-row">
@@ -91,7 +100,7 @@
 
                 </div>
             <div class="col align-content-center mt-3">
-                {{ form_user.submit(class="btn btn-primary") }}
+                {{ form_user.submit1(class="btn btn-primary") }}
             </div>
 
             </form>
@@ -144,7 +153,7 @@
                     {% endif %}
                         </div>
                         <div class="col align-content-center mt-3">
-                        {{ form_password.submit(class="btn btn-primary") }}
+                        {{ form_password.submit2(class="btn btn-primary") }}
                         </div>
                     </form>
                     </div>

@@ -1,3 +1,7 @@
+import os
+import secrets
+
+from PIL.Image import Image
 from flask_login import login_user, current_user, logout_user, login_required
 
 from flaskblog.models import User, Post
@@ -66,6 +70,19 @@ def logout():
     return redirect(url_for('home'))
 
 
+def save_picture(form_picture):
+    random_hex = secrets.token_hex(8)
+    _, ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + ext
+    picture_path = os.path.join(app.root_path, 'static/profile_img', picture_fn)
+
+    output_size = (125, 125)
+    image = Image.open(form_picture)
+    image.thumbnail(output_size)
+    image.save(picture_path)
+    return picture_fn
+
+
 @app.route('/account', methods=['GET', 'POST'])
 @login_required
 def account():
@@ -73,21 +90,19 @@ def account():
     form_user = AccountForm()
     form_password = PasswordForm()
 
-    if form_user.validate_on_submit():
+    if form_user.submit1.data and form_user.validate():
+        if form_user.picture.data:
+            picture_file = save_picture(form_user.picture.data)
+            current_user.image_file = picture_file
         current_user.username = form_user.username.data
         current_user.email = form_user.email.data
         current_user.address = form_user.address.data
         current_user.phone = form_user.phone.data
         db.session.commit()
         flash('Update succesful', 'success')
-        return redirect(url_for('home'))
-    elif request.method == 'GET':
-        form_user.username.data = current_user.username
-        form_user.email.data = current_user.email
-        form_user.address.data = current_user.address
-        form_user.phone.data = current_user.phone
+        return redirect(url_for('account'))
 
-    if form_password.validate_on_submit():
+    if form_password.submit2.data and form_password.validate():
         if bcrypt.check_password_hash(current_user.password, form_password.old_password.data):
             current_user.password = bcrypt.generate_password_hash(form_password.password.data).decode('utf-8')
             db.session.commit()
@@ -95,7 +110,9 @@ def account():
             return redirect(url_for('home'))
         flash('You entered wrong password, try again', 'danger')
 
-        current_user.phone = form_user.phone.data
-        db.session.commit()
+    form_user.username.data = current_user.username
+    form_user.email.data = current_user.email
+    form_user.address.data = current_user.address
+    form_user.phone.data = current_user.phone
     return render_template('account_form.html', title='Account', image=img,
                            form_user=form_user, form_password=form_password)
