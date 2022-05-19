@@ -1,19 +1,20 @@
 import os
 import secrets
 
-from PIL.Image import Image
+import PIL.Image
 from flask_login import login_user, current_user, logout_user, login_required
 
 from flaskblog.models import User, Post
 from flask import render_template, url_for, flash, redirect, request
-from flaskblog.forms import RegistrationForm, LoginForm, AccountForm, PasswordForm
+from flaskblog.forms import RegistrationForm, LoginForm, AccountForm, PasswordForm, PostForm
 from flaskblog import app, db, bcrypt
 
 
 @app.route('/')
 @app.route('/home')
 def home():
-    return render_template('home.html', title='Home')
+    posts = Post.query.all()
+    return render_template('home.html', title='Home', posts=posts)
 
 
 @app.route('/about')
@@ -77,7 +78,7 @@ def save_picture(form_picture):
     picture_path = os.path.join(app.root_path, 'static/profile_img', picture_fn)
 
     output_size = (125, 125)
-    image = Image.open(form_picture)
+    image = PIL.Image.open(form_picture)
     image.thumbnail(output_size)
     image.save(picture_path)
     return picture_fn
@@ -116,3 +117,16 @@ def account():
     form_user.phone.data = current_user.phone
     return render_template('account_form.html', title='Account', image=img,
                            form_user=form_user, form_password=form_password)
+
+
+@app.route('/post/new', methods=['GET', 'POST'])
+@login_required
+def post():
+    form = PostForm()
+    if form.validate_on_submit():
+        new_post = Post(title=form.title.data, content=form.content.data, author_post=current_user)
+        db.session.add(new_post)
+        db.session.commit()
+        flash('Post added', 'success')
+        return redirect(url_for('home'))
+    return render_template('post_form.html', title='Post', form=form)
