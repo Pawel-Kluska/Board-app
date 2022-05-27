@@ -175,3 +175,15 @@ def delete_post(post_id):
     flash('Post deleted', 'success')
 
     return redirect(url_for('home', title='home'))
+
+
+@app.route('/user/<username>')
+def user_post(username):
+    per_page = 1
+    page = request.args.get('page', 1, type=int)
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = Post.query.filter_by(author_post=user).paginate(page=page, per_page=per_page)
+    all_posts = Post.query.all()
+    last_page = len(all_posts)/per_page
+
+    return render_template('user_post.html', title='Home', posts=posts, len=last_page, user=user)
