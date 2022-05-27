@@ -13,9 +13,13 @@ from flaskblog import app, db, bcrypt
 @app.route('/')
 @app.route('/home')
 def home():
+    per_page = 1
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.paginate(page=page, per_page=5)
-    return render_template('home.html', title='Home', posts=posts)
+    posts = Post.query.paginate(page=page, per_page=per_page)
+    all_posts = Post.query.all()
+    last_page = len(all_posts)/per_page
+
+    return render_template('home.html', title='Home', posts=posts, len=last_page)
 
 
 @app.route('/about')
