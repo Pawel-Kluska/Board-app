@@ -1,8 +1,8 @@
-from datetime import datetime
-
 from flask_login import UserMixin
 
-from flaskblog import db, login_manager
+from flaskblog import db, login_manager, app
+import jwt
+import datetime
 
 
 @login_manager.user_loader
@@ -25,11 +25,37 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'User({self.username}, {self.email}, {self.image})'
 
+    def generate_confirmation_token(self, expiration=1800):
+        reset_token = jwt.encode(
+            {
+                "user_id": self.id,
+                "exp": datetime.datetime.now(tz=datetime.timezone.utc)
+                       + datetime.timedelta(seconds=expiration)
+            },
+            app.config['SECRET_KEY'],
+            algorithm="HS256"
+        )
+        return reset_token
+
+    @staticmethod
+    def confirm(token):
+        try:
+            token_data = jwt.decode(
+                token,
+                app.config['SECRET_KEY'],
+                leeway=datetime.timedelta(seconds=10),
+                algorithms=["HS256"]
+            )
+        except:
+            return None
+
+        return User.query.get(token_data['user_id'])
+
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
     content = db.Column(db.Text, nullable=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
