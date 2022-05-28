@@ -1,21 +1,73 @@
 {% extends "layout.html" %}
 {% block content %}
+    <div class="row">
+        <div class="col-md-10">
+            <h1>HOME</h1>
+            <div class="post-content">
+                {% for post in posts.items %}
+                    <div class="post-container">
+                        <img style="position: absolute; down: 10px;" src="{{ url_for('static', filename='profile_img/' + post.author_post.image_file) }}"
+                             alt="user" class="profile-photo-md pull-left">
+                        <div class="post-detail">
 
-    <h1>HOME</h1>
-    {% for post in posts.items %}
-        <article class="media content-section">
-            <img class="rounded-circle article-img"
-                 src="{{ url_for('static', filename='profile_img/' + post.author_post.image_file) }}">
-            <div class="media-body">
-                <div class="article-metadata">
-                    <a class="mr-2" href="#">{{ post.author_post.username }}</a>
-                    <small class="text-muted">{{ post.date.strftime('%Y-%m-%d') }}</small>
-                </div>
-                <h2><a class="article-title" href="{{ url_for('post', post_id=post.id) }}">{{ post.title }}</a></h2>
-                <p class="article-content">{{ post.content }}</p>
+                            <div class="user-info">
+                                <h5><a href="#" class="profile-link">{{ post.author_post.username }}</a>
+                                    <span class="following">{{ post.date.strftime('%Y-%m-%d') }}</span></h5>
+                                <h2><a class="article-title"
+                                       href="{{ url_for('post', post_id=post.id) }}">{{ post.title }}</a></h2>
+                            </div>
+                            {#                  <div class="reaction">#}
+                            {#                    <a class="btn text-green"><i class="fa fa-thumbs-up"></i> 13</a>#}
+                            {#                    <a class="btn text-red"><i class="fa fa-thumbs-down"></i> 0</a>#}
+                            {#                  </div>#}
+                            <div class="line-divider"></div>
+                            <div class="post-text">
+                                <p> {{ post.content }} <i class="em em-anguished"></i> <i class="em em-anguished"></i>
+                                    <i class="em em-anguished"></i></p>
+                            </div>
+                            <div class="line-divider"></div>
+                            <hr>
+                            <div class="post-comment">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt=""
+                                     class="profile-photo-sm">
+                                <p><a href="timeline.html" class="profile-link">Diana </a><i class="em em-laughing"></i>
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                                </p>
+                            </div>
+                            <div class="post-comment">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt=""
+                                     class="profile-photo-sm">
+                                <p><a href="timeline.html" class="profile-link">John</a> Lorem ipsum dolor sit amet,
+                                    consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
+                                    magna aliqua. Ut enim ad minim veniam, quis nostrud </p>
+                            </div>
+                            <div class="post-comment">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt=""
+                                     class="profile-photo-sm">
+                                <input type="text" class="form-control" placeholder="Post a comment">
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
-        </article>
-    {% endfor %}
+
+        </div>
+    </div>
+
+    {#        <article class="media content-section">#}
+    {#            <img class="rounded-circle article-img"#}
+    {#                 src="{{ url_for('static', filename='profile_img/' + post.author_post.image_file) }}">#}
+    {#            <div class="media-body">#}
+    {#                <div class="article-metadata">#}
+    {#                    <a class="mr-2" href="#">{{ post.author_post.username }}</a>#}
+    {#                    <small class="text-muted">{{ post.date.strftime('%Y-%m-%d') }}</small>#}
+    {#                </div>#}
+    {#                <h2><a class="article-title" href="{{ url_for('post', post_id=post.id) }}">{{ post.title }}</a></h2>#}
+    {#                <p class="article-content">{{ post.content }}</p>#}
+    {#            </div>#}
+    {#        </article>#}
+
     <nav aria-label="...">
         <ul class="pagination">
             {% if posts.page == 1 %}

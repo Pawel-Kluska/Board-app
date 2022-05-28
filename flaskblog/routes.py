@@ -15,7 +15,7 @@ from flaskblog import app, db, bcrypt, mail
 @app.route('/')
 @app.route('/home')
 def home():
-    per_page = 1
+    per_page = 5
     page = request.args.get('page', 1, type=int)
     posts = Post.query.paginate(page=page, per_page=per_page)
     all_posts = Post.query.all()
@@ -181,7 +181,7 @@ def delete_post(post_id):
 
 @app.route('/user/<username>')
 def user_post(username):
-    per_page = 1
+    per_page = 5
     page = request.args.get('page', 1, type=int)
     user = User.query.filter_by(username=username).first_or_404()
     posts = Post.query.filter_by(author_post=user).paginate(page=page, per_page=per_page)
