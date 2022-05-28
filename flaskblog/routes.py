@@ -4,22 +4,38 @@ import secrets
 import PIL.Image
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
-
 from flaskblog.models import User, Post, Comment
 from flask import render_template, url_for, flash, redirect, request, abort
 from flaskblog.forms import RegistrationForm, LoginForm, AccountForm, PasswordForm, PostForm, PasswordResetReqForm, \
     ResetPassword, CommentForm
 from flaskblog import app, db, bcrypt, mail
 
+default_order = 1
+
 
 @app.route('/')
+@app.route('/home/<order>')
 @app.route('/home')
-def home():
+def home(order=1):
     per_page = 5
+    order = int(order)
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.paginate(page=page, per_page=per_page)
+    if order == 1:
+        posts = Post.query.order_by(Post.date.desc()).paginate(page=page, per_page=per_page)
+
+    elif order == 2:
+        posts = Post.query.order_by(Post.date).paginate(page=page, per_page=per_page)
+
+    elif order == 3:
+        posts = Post.query.join(User).order_by(User.username).paginate(page=page, per_page=per_page)
+
+    elif order == 4:
+        posts = Post.query.order_by(Post.title).paginate(page=page, per_page=per_page)
+    else:
+        posts = Post.query.paginate(page=page, per_page=per_page)
     all_posts = Post.query.all()
-    last_page = len(all_posts) / per_page
+    last_page = ((len(all_posts) - 1) // per_page) + 1
+    print(last_page)
     form = CommentForm()
 
     return render_template('home.html', title='Home', posts=posts, len=last_page, form=form)
@@ -34,7 +50,7 @@ def about():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('home'))
+        return redirect(url_for('home', order=default_order))
     form = RegistrationForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -54,7 +70,7 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('home'))
+        return redirect(url_for('home', order=default_order))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -65,7 +81,7 @@ def login():
 
             next_page = request.args.get('next')
 
-            return redirect(next_page) if next_page else redirect(url_for('home'))
+            return redirect(next_page) if next_page else redirect(url_for('home', order=default_order))
         else:
             flash('Login Unsuccessful. Please check username and password', 'danger')
     return render_template('login.html', title='Login', form=form)
@@ -75,7 +91,7 @@ def login():
 def logout():
     logout_user()
     flash(f'You logged out properly', 'success')
-    return redirect(url_for('home'))
+    return redirect(url_for('home', order=default_order))
 
 
 def save_picture(form_picture):
@@ -115,7 +131,7 @@ def account():
             current_user.password = bcrypt.generate_password_hash(form_password.password.data).decode('utf-8')
             db.session.commit()
             flash('Password changed succesfully', 'success')
-            return redirect(url_for('home'))
+            return redirect(url_for('home', order=default_order))
         flash('You entered wrong password, try again', 'danger')
 
     form_user.username.data = current_user.username
@@ -135,7 +151,7 @@ def new_post():
         db.session.add(post)
         db.session.commit()
         flash('Post added', 'success')
-        return redirect(url_for('home'))
+        return redirect(url_for('home', order=default_order))
     return render_template('post_form.html', title='Post', form=form)
 
 
@@ -179,7 +195,7 @@ def delete_post(post_id):
     db.session.commit()
     flash('Post deleted', 'success')
 
-    return redirect(url_for('home', title='home'))
+    return redirect(url_for('home', order=default_order))
 
 
 @app.route('/user/<username>')
@@ -204,7 +220,7 @@ def send_email(user):
 @app.route('/request_reset', methods=['GET', 'POST'])
 def request_reset():
     if current_user.is_authenticated:
-        return redirect(url_for('home'))
+        return redirect(url_for('home', order=default_order))
     form = PasswordResetReqForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -217,7 +233,7 @@ def request_reset():
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
     if current_user.is_authenticated:
-        return redirect(url_for('home'))
+        return redirect(url_for('home', order=default_order))
     user = User.confirm(token)
     if user is None:
         flash("Invalid token", 'warning')
@@ -242,4 +258,6 @@ def new_comment(post_id):
         db.session.add(comment)
         db.session.commit()
         flash('Comment added', 'success')
-        return redirect(url_for('home'))
+        return redirect(url_for('home', order=default_order))
+
+
