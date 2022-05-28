@@ -5,10 +5,10 @@ import PIL.Image
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 
-from flaskblog.models import User, Post
+from flaskblog.models import User, Post, Comment
 from flask import render_template, url_for, flash, redirect, request, abort
 from flaskblog.forms import RegistrationForm, LoginForm, AccountForm, PasswordForm, PostForm, PasswordResetReqForm, \
-    ResetPassword
+    ResetPassword, CommentForm
 from flaskblog import app, db, bcrypt, mail
 
 
@@ -20,8 +20,10 @@ def home():
     posts = Post.query.paginate(page=page, per_page=per_page)
     all_posts = Post.query.all()
     last_page = len(all_posts) / per_page
+    form = CommentForm()
 
-    return render_template('home.html', title='Home', posts=posts, len=last_page)
+    return render_template('home.html', title='Home', posts=posts, len=last_page, form=form)
+
 
 
 @app.route('/about')
@@ -137,6 +139,7 @@ def new_post():
     return render_template('post_form.html', title='Post', form=form)
 
 
+
 @app.route('/post/<post_id>', methods=['GET', 'POST'])
 @login_required
 def post(post_id):
@@ -227,3 +230,16 @@ def reset_password(token):
         flash(f'Password updated. You are now able to log in', 'success')
         return redirect(url_for('login'))
     return render_template('reset_password.html', title='Reset Password', form=form)
+
+
+@app.route('/new_comment/<post_id>', methods=['GET', 'POST'])
+def new_comment(post_id):
+    form = CommentForm()
+    if form.validate_on_submit():
+        print(form.content)
+        author_post = Post.query.filter_by(id=post_id).first()
+        comment = Comment(content=form.content.data, author_comment=current_user, post=author_post)
+        db.session.add(comment)
+        db.session.commit()
+        flash('Comment added', 'success')
+        return redirect(url_for('home'))

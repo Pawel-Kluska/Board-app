@@ -3,10 +3,11 @@
     <div class="row">
         <div class="col-md-10">
             <h1>HOME</h1>
-            <div class="post-content">
+            <div style="border:1px solid black;" class="post-content">
                 {% for post in posts.items %}
                     <div class="post-container">
-                        <img style="position: absolute; down: 10px;" src="{{ url_for('static', filename='profile_img/' + post.author_post.image_file) }}"
+                        <img style="position: absolute; down: 10px;"
+                             src="{{ url_for('static', filename='profile_img/' + post.author_post.image_file) }}"
                              alt="user" class="profile-photo-md pull-left">
                         <div class="post-detail">
 
@@ -27,26 +28,43 @@
                             </div>
                             <div class="line-divider"></div>
                             <hr>
+                            {% if current_user.is_authenticated %}
+                            {% for comment in post.comments %}
+                                <div class="post-comment">
+                                    <img src="{{ url_for('static', filename='profile_img/' + comment.author_comment.image_file) }}"
+                                         alt=""
+                                         class="profile-photo-sm">
+                                    <p><a href="#" class="profile-link">{{ comment.author_comment.username }} </a><i
+                                            class="em em-laughing"></i>
+                                        {{ comment.content }}
+                                    </p>
+                                </div>
+
+                            {% endfor %}
+
                             <div class="post-comment">
-                                <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt=""
+                                <img src="{{ url_for('static', filename='profile_img/' + current_user.image_file) }}"
+                                     alt=""
                                      class="profile-photo-sm">
-                                <p><a href="timeline.html" class="profile-link">Diana </a><i class="em em-laughing"></i>
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                                </p>
+                                <form method="post" action="{{ url_for('new_comment', post_id=post.id) }}" enctype="multipart/form-data" style="width: 80%; ">
+                                    {{ form.hidden_tag() }}
+                                    <div  class="form-outline mb-4 ">
+
+                                        {% if form.content.errors %}
+                                            {{ form.content(class="form-control form-control-lg is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.content.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ form.content(class="form-control ", placeholder="Write a comment") }}
+                                        {% endif %}
+                                    </div>
+                                </form>
                             </div>
-                            <div class="post-comment">
-                                <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt=""
-                                     class="profile-photo-sm">
-                                <p><a href="timeline.html" class="profile-link">John</a> Lorem ipsum dolor sit amet,
-                                    consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-                                    magna aliqua. Ut enim ad minim veniam, quis nostrud </p>
-                            </div>
-                            <div class="post-comment">
-                                <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt=""
-                                     class="profile-photo-sm">
-                                <input type="text" class="form-control" placeholder="Post a comment">
-                            </div>
+                            <hr>
+                        {% endif %}
                         </div>
                     </div>
                 {% endfor %}
