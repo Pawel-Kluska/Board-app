@@ -4,11 +4,11 @@ import secrets
 import PIL.Image
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
-from flaskblog.models import User, Post, Comment
+from src.models import User, Post, Comment
 from flask import render_template, url_for, flash, redirect, request, abort
-from flaskblog.forms import RegistrationForm, LoginForm, AccountForm, PasswordForm, PostForm, PasswordResetReqForm, \
+from src.forms import RegistrationForm, LoginForm, AccountForm, PasswordForm, PostForm, PasswordResetReqForm, \
     ResetPassword, CommentForm
-from flaskblog import app, db, bcrypt, mail
+from src import app, db, bcrypt, mail
 
 default_order = 1
 

@@ -1,6 +1,6 @@
 from flask_login import UserMixin
 
-from flaskblog import db, login_manager, app
+from src import db, login_manager, app
 import jwt
 import datetime
 
