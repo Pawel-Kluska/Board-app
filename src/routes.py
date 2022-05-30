@@ -14,25 +14,14 @@ default_order = 1
 
 
 @app.route('/')
-@app.route('/home/<order>')
 @app.route('/home')
-def home(order=1):
+def home():
     per_page = 5
-    order = int(order)
+
+    global default_order
+
     page = request.args.get('page', 1, type=int)
-    if order == 1:
-        posts = Post.query.order_by(Post.date.desc()).paginate(page=page, per_page=per_page)
-
-    elif order == 2:
-        posts = Post.query.order_by(Post.date).paginate(page=page, per_page=per_page)
-
-    elif order == 3:
-        posts = Post.query.join(User).order_by(User.username).paginate(page=page, per_page=per_page)
-
-    elif order == 4:
-        posts = Post.query.order_by(Post.title).paginate(page=page, per_page=per_page)
-    else:
-        posts = Post.query.paginate(page=page, per_page=per_page)
+    posts = get_posts_ordered(page, per_page)
     all_posts = Post.query.all()
     last_page = ((len(all_posts) - 1) // per_page) + 1
     print(last_page)
@@ -41,6 +30,28 @@ def home(order=1):
     return render_template('home.html', title='Home', posts=posts, len=last_page, form=form)
 
 
+def get_posts_ordered(page, per_page, user=None):
+    global default_order
+
+    if default_order == 1:
+        posts = Post.query.order_by(Post.date.desc())
+
+    elif default_order == 2:
+        posts = Post.query.order_by(Post.date)
+
+    elif default_order == 3:
+        posts = Post.query.join(User).order_by(User.username)
+
+    elif default_order == 4:
+        posts = Post.query.order_by(Post.title)
+    else:
+        posts = Post.query
+
+    if user is not None and default_order !=3:
+        posts = posts.filter_by(author_post=user)
+
+    posts = posts.paginate(page=page, per_page=per_page)
+    return posts
 
 @app.route('/about')
 def about():
@@ -50,7 +61,7 @@ def about():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('home', order=default_order))
+        return redirect(url_for('home'))
     form = RegistrationForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -70,7 +81,7 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('home', order=default_order))
+        return redirect(url_for('home'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -81,7 +92,7 @@ def login():
 
             next_page = request.args.get('next')
 
-            return redirect(next_page) if next_page else redirect(url_for('home', order=default_order))
+            return redirect(next_page) if next_page else redirect(url_for('home'))
         else:
             flash('Login Unsuccessful. Please check username and password', 'danger')
     return render_template('login.html', title='Login', form=form)
@@ -91,7 +102,7 @@ def login():
 def logout():
     logout_user()
     flash(f'You logged out properly', 'success')
-    return redirect(url_for('home', order=default_order))
+    return redirect(url_for('home'))
 
 
 def save_picture(form_picture):
@@ -131,7 +142,7 @@ def account():
             current_user.password = bcrypt.generate_password_hash(form_password.password.data).decode('utf-8')
             db.session.commit()
             flash('Password changed succesfully', 'success')
-            return redirect(url_for('home', order=default_order))
+            return redirect(url_for('home'))
         flash('You entered wrong password, try again', 'danger')
 
     form_user.username.data = current_user.username
@@ -151,7 +162,7 @@ def new_post():
         db.session.add(post)
         db.session.commit()
         flash('Post added', 'success')
-        return redirect(url_for('home', order=default_order))
+        return redirect(url_for('home'))
     return render_template('post_form.html', title='Post', form=form)
 
 
@@ -195,7 +206,7 @@ def delete_post(post_id):
     db.session.commit()
     flash('Post deleted', 'success')
 
-    return redirect(url_for('home', order=default_order))
+    return redirect(url_for('home'))
 
 
 @app.route('/user/<username>')
@@ -203,7 +214,7 @@ def user_post(username):
     per_page = 5
     page = request.args.get('page', 1, type=int)
     user = User.query.filter_by(username=username).first_or_404()
-    posts = Post.query.filter_by(author_post=user).paginate(page=page, per_page=per_page)
+    posts = get_posts_ordered(page, per_page, user=user)
     all_posts = Post.query.all()
     last_page = len(all_posts) / per_page
 
@@ -220,7 +231,7 @@ def send_email(user):
 @app.route('/request_reset', methods=['GET', 'POST'])
 def request_reset():
     if current_user.is_authenticated:
-        return redirect(url_for('home', order=default_order))
+        return redirect(url_for('home'))
     form = PasswordResetReqForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -233,7 +244,7 @@ def request_reset():
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
     if current_user.is_authenticated:
-        return redirect(url_for('home', order=default_order))
+        return redirect(url_for('home'))
     user = User.confirm(token)
     if user is None:
         flash("Invalid token", 'warning')
@@ -252,12 +263,23 @@ def reset_password(token):
 def new_comment(post_id):
     form = CommentForm()
     if form.validate_on_submit():
-        print(form.content)
         author_post = Post.query.filter_by(id=post_id).first()
         comment = Comment(content=form.content.data, author_comment=current_user, post=author_post)
         db.session.add(comment)
         db.session.commit()
         flash('Comment added', 'success')
-        return redirect(url_for('home', order=default_order))
+        return redirect(url_for('home'))
 
 
+@app.route('/terms_of_service')
+def terms_of_service():
+    return render_template('terms_of_service.html', title='Terms of service')
+
+
+@app.route('/sort/<order>', methods=['GET', 'POST'])
+def sort(order):
+    global default_order
+    order = int(order)
+    default_order = order
+    print(request.referrer)
+    return redirect(request.referrer)

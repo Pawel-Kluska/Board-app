@@ -14,6 +14,7 @@ class RegistrationForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     address = StringField('Address', validators=[Length(0, 12)])
     phone = StringField('Phone', validators=[Length(9, 12)])
+    terms_of_service = BooleanField('Terms of service', validators=[DataRequired()])
     submit = SubmitField('Sign up')
 
     def validate_username(self, username):
