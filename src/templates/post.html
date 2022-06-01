@@ -13,13 +13,13 @@
             <p class="article-content">{{ post.content }}</p>
         </div>
         <div>
-        <hr>
+            <hr>
             {% if post.author_post == current_user %}
                 <div>
                     <a class="col align-content-center mt-3"
                        href="{{ url_for('update_post', post_id=post.id) }}">Update</a>
-                    <button type="button" class="btn btn-danger btn-sm m-1" data-bs-toggle="modal"
-                            data-bs-target="#deleteModal">Delete
+                    <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal"
+                            data-target="#deleteModal">Delete
                     </button>
                 </div>
             {% endif %}
@@ -33,12 +33,12 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="deleteModalLabel">Delete Post?</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <form action="{{ url_for('delete_post', post_id=post.id) }}" method="POST">
                         <input class="btn btn-danger" type="submit" value="Delete">
                     </form>

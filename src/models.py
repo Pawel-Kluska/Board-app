@@ -20,10 +20,11 @@ class User(db.Model, UserMixin):
     phone = db.Column(db.String(12), nullable=True)
 
     posts = db.relationship('Post', backref='author_post', lazy=True)
+    likes = db.relationship('Like', backref='author_like', lazy=True)
     comments = db.relationship('Comment', backref='author_comment', lazy=True)
 
     def __repr__(self):
-        return f'User({self.username}, {self.email}, {self.image})'
+        return f'User({self.username}, {self.email}, {self.image_file})'
 
     def generate_confirmation_token(self, expiration=1800):
         reset_token = jwt.encode(
@@ -59,7 +60,8 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    comments = db.relationship('Comment', backref='post', lazy=True)
+    comments = db.relationship('Comment', backref='post', cascade='all,delete', lazy=True)
+    likes = db.relationship('Like', backref='post', cascade='all,delete', lazy=True)
 
     def __repr__(self):
         return f'Post({self.title}, {self.date})'
@@ -73,4 +75,16 @@ class Comment(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
 
     def __repr__(self):
-        return f'Post({self.title}, {self.date})'
+        return f'Comment({self.content})'
+
+
+class Like(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    like_value = db.Column(db.Boolean, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+
+    def __repr__(self):
+        return f'Like({self.like_value}, {self.user_id}, {self.post_id})'
+

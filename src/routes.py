@@ -4,7 +4,7 @@ import secrets
 import PIL.Image
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
-from src.models import User, Post, Comment
+from src.models import User, Post, Comment, Like
 from flask import render_template, url_for, flash, redirect, request, abort
 from src.forms import RegistrationForm, LoginForm, AccountForm, PasswordForm, PostForm, PasswordResetReqForm, \
     ResetPassword, CommentForm
@@ -15,19 +15,27 @@ default_order = 1
 
 @app.route('/')
 @app.route('/home')
-def home():
+@app.route('/home/<username>')
+def home(username=None):
     per_page = 5
-
-    global default_order
-
     page = request.args.get('page', 1, type=int)
-    posts = get_posts_ordered(page, per_page)
-    all_posts = Post.query.all()
-    last_page = ((len(all_posts) - 1) // per_page) + 1
-    print(last_page)
+    if username is not None:
+        user = User.query.filter_by(username=username).first()
+        title = 'Posts made by user: ' + user.username
+    else:
+        user = None
+        title = 'Home'
+    posts = get_posts_ordered(page, per_page, user=user)
+    length = Post.query.count()
+    if length == 0:
+        last_page = 1
+    else:
+        last_page = ((length - 1) // per_page) + 1
+
     form = CommentForm()
 
-    return render_template('home.html', title='Home', posts=posts, len=last_page, form=form)
+    return render_template('home.html', title=title, posts=posts, len=last_page, form=form, get_likes=get_post_likes,
+                           is_liked=is_liked)
 
 
 def get_posts_ordered(page, per_page, user=None):
@@ -47,11 +55,12 @@ def get_posts_ordered(page, per_page, user=None):
     else:
         posts = Post.query
 
-    if user is not None and default_order !=3:
+    if user is not None and default_order != 3:
         posts = posts.filter_by(author_post=user)
 
     posts = posts.paginate(page=page, per_page=per_page)
     return posts
+
 
 @app.route('/about')
 def about():
@@ -166,7 +175,6 @@ def new_post():
     return render_template('post_form.html', title='Post', form=form)
 
 
-
 @app.route('/post/<post_id>', methods=['GET', 'POST'])
 @login_required
 def post(post_id):
@@ -209,16 +217,7 @@ def delete_post(post_id):
     return redirect(url_for('home'))
 
 
-@app.route('/user/<username>')
-def user_post(username):
-    per_page = 5
-    page = request.args.get('page', 1, type=int)
-    user = User.query.filter_by(username=username).first_or_404()
-    posts = get_posts_ordered(page, per_page, user=user)
-    all_posts = Post.query.all()
-    last_page = len(all_posts) / per_page
 
-    return render_template('user_post.html', title='Home', posts=posts, len=last_page, user=user)
 
 
 def send_email(user):
@@ -227,6 +226,7 @@ def send_email(user):
     msg.body = f'''To reset your password visit the following website {url_for('reset_password', token=token, _external=True)}
 '''
     mail.send(msg)
+
 
 @app.route('/request_reset', methods=['GET', 'POST'])
 def request_reset():
@@ -281,5 +281,46 @@ def sort(order):
     global default_order
     order = int(order)
     default_order = order
-    print(request.referrer)
     return redirect(request.referrer)
+
+
+def get_post_likes(post_l, type_like):
+    if type_like == '1':
+        return len(list(filter(lambda l: l.like_value is True, post_l.likes)))
+    elif type_like == '0':
+        return len(list(filter(lambda l: l.like_value is False, post_l.likes)))
+    else:
+        return None
+
+
+@app.route('/like/<post_id>/<value>', methods=['GET', 'POST'])
+def like(post_id, value):
+    if value == 'True':
+        value = True
+    else:
+        value = False
+
+    db_post = Post.query.filter_by(id=int(post_id)).first()
+    db_like = Like.query.filter_by(author_like=current_user, post=db_post).first()
+
+    if db_like:
+        if not value and db_like.like_value or value and not db_like.like_value:
+            db_like.like_value = value
+        else:
+            db.session.delete(db_like)
+
+    else:
+        new_like = Like(like_value=value, author_like=current_user, post=db_post)
+        db.session.add(new_like)
+    db.session.commit()
+    return redirect(url_for('home'))
+
+
+def is_liked(db_post, value):
+    db_like = Like.query.filter_by(author_like=current_user, post=db_post).first()
+    if value == '0' and db_like is not None and not db_like.like_value:
+        return True
+    elif value == '1' and db_like is not None and db_like.like_value:
+        return True
+    else:
+        return False
