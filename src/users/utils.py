@@ -1,12 +1,10 @@
 import os
 import secrets
-from mailbox import Message
+from flask_mail import Message
 
 import PIL.Image
-import mail as mail
-from flask import url_for
-
-from flask import current_app
+from src import mail
+from flask import url_for, current_app
 
 
 def save_picture(form_picture):

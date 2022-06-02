@@ -4,8 +4,8 @@ from flask import Blueprint, flash, redirect, render_template, url_for, abort
 from flask_login import login_required, current_user
 from src import db
 
-from models import Post, Like, Comment
-from posts.forms import PostForm, CommentForm
+from src.models import Post, Like, Comment
+from src.posts.forms import PostForm, CommentForm
 
 posts = Blueprint('posts', __name__)
 

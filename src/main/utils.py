@@ -1,6 +1,6 @@
 from flask_login import current_user
 
-from models import Like, Post, User
+from src.models import Like, Post, User
 
 
 def get_posts_ordered(page, per_page, user=None, default_order=1):

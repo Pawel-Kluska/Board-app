@@ -1,9 +1,9 @@
 
 from flask import Blueprint, render_template, redirect, request
 
-from main.utils import get_posts_ordered, is_liked, get_post_likes
-from models import User, Post
-from posts.forms import CommentForm
+from src.main.utils import get_posts_ordered, is_liked, get_post_likes
+from src.models import User, Post
+from src.posts.forms import CommentForm
 
 main = Blueprint('main', __name__)
 
