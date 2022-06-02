@@ -23,31 +23,23 @@
                                        href="{{ url_for('posts.post', post_id=post.id) }}">{{ post.title }}</a></h2>
                             </div>
                             <div class="reaction">
-                                {% if current_user.is_authenticated %}
-                                    <a class="btn text-green"
-                                       href="{{ url_for('posts.like', post_id=post.id, value=True) }}">
-                                    {% if is_liked(post, '1') %}
+                                <a class="btn text-green"
+                                   href="{{ url_for('posts.like', post_id=post.id, value=True) }}">
+                                    {% if current_user.is_authenticated and is_liked(post, '1') %}
                                         <i class="bi bi-hand-thumbs-up-fill"></i>
                                     {% else %}
                                         <i class="bi bi-hand-thumbs-up"></i>
                                     {% endif %}
-                                {% else %}
-                                    <a class="btn text-green"><i class="bi bi-hand-thumbs-up"></i>
-                                {% endif %}
-                                {{ get_likes(post, '1') }}</a>
+                                    {{ get_likes(post, '1') }}</a>
 
-                                {% if current_user.is_authenticated %}
-                                    <a class="btn text-red"
-                                       href="{{ url_for('posts.like', post_id=post.id, value=False) }}">
-                                    {% if is_liked(post, '0') %}
+                                <a class="btn text-red"
+                                   href="{{ url_for('posts.like', post_id=post.id, value=False) }}">
+                                    {% if current_user.is_authenticated and is_liked(post, '0') %}
                                         <i class="bi bi-hand-thumbs-down-fill"></i>
                                     {% else %}
                                         <i class="bi bi-hand-thumbs-down"></i>
                                     {% endif %}
-                                {% else %}
-                                    <a class="btn text-red"><i class="bi bi-hand-thumbs-down"></i>
-                                {% endif %}
-                                {{ get_likes(post, '0') }}</a>
+                                    {{ get_likes(post, '0') }}</a>
                             </div>
                             <div class="line-divider"></div>
                             <div class="post-text">

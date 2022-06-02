@@ -78,6 +78,7 @@ def new_comment(post_id):
 
 
 @posts.route('/like/<post_id>/<value>', methods=['GET', 'POST'])
+@login_required
 def like(post_id, value):
     if value == 'True':
         value = True
