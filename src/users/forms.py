@@ -1,10 +1,10 @@
 from flask_login import current_user
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, FileField, TextAreaField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, FileField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 
-from src.models import User
+from models import User
 
 
 class RegistrationForm(FlaskForm):
@@ -66,12 +66,6 @@ class PasswordForm(FlaskForm):
     submit2 = SubmitField('Update Password')
 
 
-class PostForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired()])
-    content = TextAreaField('Content', validators=[DataRequired()])
-    submit = SubmitField('Post')
-
-
 class PasswordResetReqForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
 
@@ -87,9 +81,3 @@ class ResetPassword(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Reset')
-
-
-class CommentForm(FlaskForm):
-    content = StringField('Content', validators=[DataRequired()])
-    submit = SubmitField('Add')
-

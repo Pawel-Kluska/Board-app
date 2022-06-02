@@ -1,6 +1,6 @@
 from flask_login import UserMixin
-
-from src import db, login_manager, app
+from flask import current_app
+from src import db, login_manager
 import jwt
 import datetime
 
@@ -33,7 +33,7 @@ class User(db.Model, UserMixin):
                 "exp": datetime.datetime.now(tz=datetime.timezone.utc)
                        + datetime.timedelta(seconds=expiration)
             },
-            app.config['SECRET_KEY'],
+            current_app.config['SECRET_KEY'],
             algorithm="HS256"
         )
         return reset_token
@@ -43,7 +43,7 @@ class User(db.Model, UserMixin):
         try:
             token_data = jwt.decode(
                 token,
-                app.config['SECRET_KEY'],
+                current_app.config['SECRET_KEY'],
                 leeway=datetime.timedelta(seconds=10),
                 algorithms=["HS256"]
             )

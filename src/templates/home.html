@@ -3,7 +3,7 @@
     <div class="row">
         <div class="col-md-10">
             <h1>{{ title }}</h1>
-            <form action="{{ url_for('new_post') }}">
+            <form action="{{ url_for('posts.new_post') }}">
                 <input class="btn btn-dark btn-lg mb-2" type="submit" value="Add a new post"/>
             </form>
 
@@ -16,16 +16,16 @@
                         <div class="post-detail">
 
                             <div class="user-info">
-                                <h5><a href="{{ url_for('home', username=(post.author_post.username)) }}"
+                                <h5><a href="{{ url_for('main.home', username=(post.author_post.username)) }}"
                                        class="profile-link">{{ post.author_post.username }}</a>
                                     <span class="following">{{ post.date.strftime('%Y-%m-%d') }}</span></h5>
                                 <h2><a class="article-title"
-                                       href="{{ url_for('post', post_id=post.id) }}">{{ post.title }}</a></h2>
+                                       href="{{ url_for('posts.post', post_id=post.id) }}">{{ post.title }}</a></h2>
                             </div>
                             <div class="reaction">
                                 {% if current_user.is_authenticated %}
                                     <a class="btn text-green"
-                                       href="{{ url_for('like', post_id=post.id, value=True) }}">
+                                       href="{{ url_for('posts.like', post_id=post.id, value=True) }}">
                                     {% if is_liked(post, '1') %}
                                         <i class="bi bi-hand-thumbs-up-fill"></i>
                                     {% else %}
@@ -38,7 +38,7 @@
 
                                 {% if current_user.is_authenticated %}
                                     <a class="btn text-red"
-                                       href="{{ url_for('like', post_id=post.id, value=False) }}">
+                                       href="{{ url_for('posts.like', post_id=post.id, value=False) }}">
                                     {% if is_liked(post, '0') %}
                                         <i class="bi bi-hand-thumbs-down-fill"></i>
                                     {% else %}
@@ -74,7 +74,7 @@
                                     <img src="{{ url_for('static', filename='profile_img/' + current_user.image_file) }}"
                                          alt=""
                                          class="profile-photo-sm">
-                                    <form method="post" action="{{ url_for('new_comment', post_id=post.id) }}"
+                                    <form method="post" action="{{ url_for('posts.new_comment', post_id=post.id) }}"
                                           enctype="multipart/form-data" style="width: 80%; ">
                                         {{ form.hidden_tag() }}
                                         <div class="form-outline mb-4 ">
@@ -109,18 +109,18 @@
                     {% else %}
                 <li class="page-item">
             {% endif %}
-            <a class="page-link" href="{{ url_for('home', page=posts.page - 1) }}">Previous</a>
+            <a class="page-link" href="{{ url_for('main.home', page=posts.page - 1) }}">Previous</a>
             </li>
 
             {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
                 {% if page_num == posts.page %}
                     <li class="page-item active">
-                        <a class="page-link" href="{{ url_for('home', page=page_num) }}">{{ page_num }}</a>
+                        <a class="page-link" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
                     </li>
 
                 {% elif page_num %}
                     <li class="page-item"><a class="page-link"
-                                             href="{{ url_for('home', page=page_num) }}">{{ page_num }}</a>
+                                             href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
                     </li>
                 {% else %}
                     <li class="page-item disabled">
@@ -134,7 +134,7 @@
                     {% else %}
                 <li class="page-item">
             {% endif %}
-            <a class="page-link" href="{{ url_for('home', page=posts.page + 1) }}">Next</a>
+            <a class="page-link" href="{{ url_for('main.home', page=posts.page + 1) }}">Next</a>
             </li>
 
         </ul>
