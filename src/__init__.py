@@ -5,7 +5,7 @@ from flask_mail import Mail
 
 from flask_sqlalchemy import SQLAlchemy
 
-from config import Config
+from src.config import Config
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
