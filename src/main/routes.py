@@ -1,4 +1,3 @@
-
 from flask import Blueprint, render_template, redirect, request
 
 from src.main.utils import get_posts_ordered, is_liked, get_post_likes
@@ -7,13 +6,20 @@ from src.posts.forms import CommentForm
 
 main = Blueprint('main', __name__)
 
+# Variable responsible for remembering actual sorting configuration
 default_order = 1
+
+"""Endpoints related to main part of the application"""
 
 
 @main.route('/')
 @main.route('/home')
 @main.route('/home/<username>')
 def home(username=None):
+    """Endpoint displaying home page with all posts, it has extra parameter (username)
+    to use for filtering posts by users who created them
+    All posts are paginated, one page has maximum 5 posts"""
+
     per_page = 5
     page = request.args.get('page', 1, type=int)
     if username is not None:
@@ -31,22 +37,28 @@ def home(username=None):
 
     form = CommentForm()
 
-    return render_template('home.html', title=title, posts=posts, len=last_page, form=form, get_likes=get_post_likes,
+    return render_template('home/home.html', title=title, posts=posts, len=last_page, form=form,
+                           get_likes=get_post_likes,
                            is_liked=is_liked)
 
 
 @main.route('/about')
 def about():
-    return render_template('about.html', title='About')
+    """Endpoint generating template with application info"""
+    return render_template('home/about.html', title='About')
 
+
+# Endpoint wyświetlający warunki użytkowania strony
 
 @main.route('/terms_of_service')
 def terms_of_service():
-    return render_template('terms_of_service.html', title='Terms of service')
+    """Endpoint generating template with terms of service"""
+    return render_template('user/terms_of_service.html', title='Terms of service')
 
 
 @main.route('/sort/<order>', methods=['GET', 'POST'])
 def sort(order):
+    """Endpoint saving chosen sorting, it comes back to request who called it"""
     global default_order
     order = int(order)
     default_order = order

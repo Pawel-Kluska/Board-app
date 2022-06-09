@@ -2,8 +2,11 @@ from flask_login import current_user
 
 from src.models import Like, Post, User
 
+"""A few utility functions used by main part of application"""
+
 
 def get_posts_ordered(page, per_page, user=None, default_order=1):
+    """Function getting posts from database with requested order. It has extra parameter to filter posts by user"""
 
     if default_order == 1:
         posts = Post.query.order_by(Post.date.desc())
@@ -27,6 +30,7 @@ def get_posts_ordered(page, per_page, user=None, default_order=1):
 
 
 def get_post_likes(post_l, type_like):
+    """Function getting likes from database. It can get likes or dislikes depend on parameter type_like."""
     if type_like == '1':
         return len(list(filter(lambda l: l.like_value is True, post_l.likes)))
     elif type_like == '0':
@@ -36,6 +40,9 @@ def get_post_likes(post_l, type_like):
 
 
 def is_liked(db_post, value):
+    """Function checking if current user already like or dislike specific post. It compares parameter values with
+    database values"""
+
     db_like = Like.query.filter_by(author_like=current_user, post=db_post).first()
     if value == '0' and db_like is not None and not db_like.like_value:
         return True

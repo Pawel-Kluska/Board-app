@@ -9,10 +9,13 @@ from src.posts.forms import PostForm, CommentForm
 
 posts = Blueprint('posts', __name__)
 
+"""Endpoints related to posts and comments"""
+
 
 @posts.route('/post/new', methods=['GET', 'POST'])
 @login_required
 def new_post():
+    """Endpoint displaying form to create new post, validating data and saving it in database"""
     form = PostForm()
     if form.validate_on_submit():
         post = Post(title=form.title.data, content=form.content.data, author_post=current_user)
@@ -20,19 +23,21 @@ def new_post():
         db.session.commit()
         flash('Post added', 'success')
         return redirect(url_for('main.home'))
-    return render_template('post_form.html', title='Post', form=form)
+    return render_template('post/post_form.html', title='Post', form=form)
 
 
-@posts.route('/post/<post_id>', methods=['GET', 'POST'])
+@posts.route('/post/<post_id>', methods=['GET'])
 @login_required
 def post(post_id):
+    """Endpoint displaying one, chosen post by id"""
     post_db = Post.query.get_or_404(post_id)
-    return render_template('post.html', title=post_db.title, post=post_db)
+    return render_template('post/post.html', title=post_db.title, post=post_db)
 
 
 @posts.route('/post/<post_id>/update', methods=['GET', 'POST'])
 @login_required
 def update_post(post_id):
+    """Endpoint displaying form to update post and carrying out this update"""
     post_db = Post.query.get_or_404(post_id)
     form = PostForm()
     if post_db.author_post != current_user:
@@ -48,12 +53,13 @@ def update_post(post_id):
         form.title.data = post_db.title
         form.content.data = post_db.content
 
-    return render_template('post_form.html', title='Update Post', form=form)
+    return render_template('post/post_form.html', title='Update Post', form=form)
 
 
 @posts.route('/post/<post_id>/delete', methods=['POST'])
 @login_required
 def delete_post(post_id):
+    """Endpoint removing chosen post"""
     post_db = Post.query.get_or_404(post_id)
     if post_db.author_post != current_user:
         abort(403)
@@ -65,8 +71,9 @@ def delete_post(post_id):
     return redirect(url_for('main.home'))
 
 
-@posts.route('/new_comment/<post_id>', methods=['GET', 'POST'])
+@posts.route('/new_comment/<post_id>', methods=['POST'])
 def new_comment(post_id):
+    """endpoint saving new comments"""
     form = CommentForm()
     if form.validate_on_submit():
         author_post = Post.query.filter_by(id=post_id).first()
@@ -80,6 +87,11 @@ def new_comment(post_id):
 @posts.route('/like/<post_id>/<value>', methods=['GET', 'POST'])
 @login_required
 def like(post_id, value):
+    """Endpoint saving new likes or dislikes for specific post.
+    User can like or dislike a lot of posts, but he can't like or dislike one post a few times
+     If user has liked a post, and he clicks on dislike he changes his record in database
+     If user clicks on like/dislike which already is in database, he removes his record"""
+
     if value == 'True':
         value = True
     else:
